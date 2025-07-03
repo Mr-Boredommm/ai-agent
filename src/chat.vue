@@ -3,14 +3,10 @@
     <!-- 第一列：模型选择栏 -->
     <aside class="sidebar">
       <div class="sidebar-title">角色选择</div>
-      <el-menu :default-active="String(activeModelIdx)" @select="idx => activeModelIdx = Number(idx)">
-        <el-menu-item
-          v-for="(item, idx) in modelList"
-          :key="idx"
-          :index="String(idx)"
-        >
-          {{ item.name }}
-        </el-menu-item>
+      <el-menu default-active="1">
+        <el-menu-item index="1">模型A</el-menu-item>
+        <el-menu-item index="2">模型B</el-menu-item>
+        <el-menu-item index="3">模型C</el-menu-item>
       </el-menu>
     </aside>
 
@@ -26,7 +22,7 @@
           <!-- 用头像替换“AI:”字样，仅AI消息显示头像 -->
           <img
             v-if="msg.role === 'ai'"
-            :src="modelList[activeModelIdx].avatar"
+            :src="schar1"
             alt="AI头像"
             class="ai-avatar"
           />
@@ -64,7 +60,7 @@
     <!-- 第三列：主题元素 -->
     <aside class="theme-bar">
       <el-card>
-          <img :src="modelList[activeModelIdx].themeImg" alt="本地图片" class="theme-img" />
+          <img :src="char1" alt="本地图片" class="theme-img" />
         </el-card>
       <div class="theme-content">
         
@@ -80,40 +76,14 @@ import { Loading } from '@element-plus/icons-vue' // 新增
 import { marked } from 'marked'
 import char1 from '@/assets/char1.jpg'
 import schar1 from '@/assets/schar1.png'
-import schar2 from '@/assets/schar2.png'
 
 const input = ref('')
 const messages = ref([
   { role: 'ai', content: '喵？' },
 ])
-const loading = ref(false) // 新增   
+const loading = ref(false) // 新增
 
-const DEEPSEEK_API_KEY = 'sk-48a5c556403f4806b7472ef915d2dc40'
-
-const modelList = [
-  {
-    name: '模型A',
-    avatar: schar1,
-    themeImg: char1,
-    knowledgeBase: 'kb_a',
-    model: 'deepseek-chat'
-  },
-  {
-    name: '模型B',
-    avatar: schar2,
-    themeImg: char1,
-    knowledgeBase: 'kb_b',
-    model: 'deepseek-chat'
-  },
-  {
-    name: '模型C',
-    avatar: schar1,
-    themeImg: char1,
-    knowledgeBase: 'kb_c',
-    model: 'deepseek-chat'
-  }
-]
-const activeModelIdx = ref(0)
+const DEEPSEEK_API_KEY = 'sk-cf33434e04a24ceb99c20e9d99c846ff'
 
 function renderMarkdown(text) {
   return marked.parse(text)
@@ -128,7 +98,6 @@ async function send() {
   loading.value = true // 新增：开始加载
 
   try {
-    const currentModel = modelList[activeModelIdx]
     const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -136,8 +105,7 @@ async function send() {
         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: currentModel.model,
-        knowledge_base: currentModel.knowledgeBase, // 后续可用
+        model: 'deepseek-chat',
         messages: [
           { role: 'system', content: 'You are a helpful assistant.' },
           ...messages.value.map(m => ({
@@ -162,14 +130,6 @@ async function send() {
 function scrollToBottom() {
   const el = document.querySelector('.chat-messages')
   if (el) el.scrollTop = el.scrollHeight
-}
-
-function switchModel(idx) {
-  activeModelIdx.value = idx
-  // 切换模型时，清空对话记录
-  messages.value = [{ role: 'ai', content: '喵？' }]
-  input.value = ''
-  // 这里可以添加根据模型加载知识库的逻辑
 }
 </script>
 
