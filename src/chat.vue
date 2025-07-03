@@ -3,7 +3,7 @@
     <!-- 第一列：模型选择栏 -->
     <aside class="sidebar">
       <div class="sidebar-title">角色选择</div>
-      <el-menu default-active="1">
+      <el-menu :default-active="currentModel" @select="switchModel">
         <el-menu-item index="1">模型A</el-menu-item>
         <el-menu-item index="2">模型B</el-menu-item>
         <el-menu-item index="3">模型C</el-menu-item>
@@ -22,7 +22,7 @@
           <!-- 用头像替换“AI:”字样，仅AI消息显示头像 -->
           <img
             v-if="msg.role === 'ai'"
-            :src="schar1"
+            :src="modelConfigs[currentModel].avatar"
             alt="AI头像"
             class="ai-avatar"
           />
@@ -60,10 +60,10 @@
     <!-- 第三列：主题元素 -->
     <aside class="theme-bar">
       <el-card>
-          <img :src="char1" alt="本地图片" class="theme-img" />
-        </el-card>
+        <img :src="modelConfigs[currentModel].themeImg" alt="本地图片" class="theme-img" />
+      </el-card>
       <div class="theme-content">
-        
+        <!-- 可根据模型显示不同内容 -->
       </div>
     </aside>
   </div>
@@ -72,22 +72,63 @@
 <script setup>
 import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Loading } from '@element-plus/icons-vue' // 新增
 import { marked } from 'marked'
 import char1 from '@/assets/char1.jpg'
+import char2 from '@/assets/char2.jpg'
+import char3 from '@/assets/char3.jpg'
 import schar1 from '@/assets/schar1.png'
+import schar2 from '@/assets/schar2.png'
+import schar3 from '@/assets/schar3.png'
 
 const input = ref('')
-const messages = ref([
-  { role: 'ai', content: '喵？' },
-])
-const loading = ref(false) // 新增
+const loading = ref(false)
+const currentModel = ref('1')
+const history = ref({}) // 保存各模型的历史记录
 
-const DEEPSEEK_API_KEY = 'sk-cf33434e04a24ceb99c20e9d99c846ff'
+// 不同模型的配置，增加 welcome 字段
+const modelConfigs = {
+  '1': {
+    prompt: '你是模型A，一个友好的AI助手。',
+    themeImg: char1,
+    avatar: schar1,
+    welcome: '你好，我是模型A，有什么可以帮您？'
+  },
+  '2': {
+    prompt: '你是模型B，专业的技术顾问。',
+    themeImg: char2,
+    avatar: schar2,
+    welcome: '您好，我是模型B，专业解答技术问题。'
+  },
+  '3': {
+    prompt: '你是模型C，幽默的生活小助手。',
+    themeImg: char3,
+    avatar: schar3,
+    welcome: '嗨，我是模型C，生活有趣事都可以找我聊聊！'
+  }
+}
+
+// 初始化messages时用当前模型的welcome
+const messages = ref([
+  { role: 'ai', content: modelConfigs[currentModel.value].welcome }
+])
 
 function renderMarkdown(text) {
   return marked.parse(text)
 }
+
+function switchModel(index) {
+  // 保存当前聊天记录
+  history.value[currentModel.value] = [...messages.value]
+  // 切换模型
+  currentModel.value = index
+  // 恢复新模型的历史或初始化
+  messages.value = history.value[index]
+    ? [...history.value[index]]
+    : [{ role: 'ai', content: modelConfigs[index].welcome }]
+  input.value = ''
+}
+
+const DEEPSEEK_API_KEY = 'sk-cf33434e04a24ceb99c20e9d99c846ff'
 
 async function send() {
   const userInput = input.value.trim()
@@ -95,7 +136,7 @@ async function send() {
 
   messages.value.push({ role: 'user', content: userInput })
   input.value = ''
-  loading.value = true // 新增：开始加载
+  loading.value = true
 
   try {
     const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -107,7 +148,7 @@ async function send() {
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'system', content: modelConfigs[currentModel.value].prompt },
           ...messages.value.map(m => ({
             role: m.role === 'ai' ? 'assistant' : 'user',
             content: m.content
@@ -123,7 +164,7 @@ async function send() {
   } catch (e) {
     ElMessage.error('AI接口调用失败')
   } finally {
-    loading.value = false // 新增：结束加载
+    loading.value = false
   }
 }
 
