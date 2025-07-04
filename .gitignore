@@ -31,3 +31,4 @@ coverage
 /server/config.json
 /server/chroma_db/
 *.tsbuildinfo
+/server/_pycache_
