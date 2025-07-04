@@ -4,9 +4,9 @@
     <aside class="sidebar">
       <div class="sidebar-title">角色选择</div>
       <el-menu :default-active="currentModel" @select="switchModel">
-        <el-menu-item index="1">角色一：猜谜大师</el-menu-item>
-        <el-menu-item index="2">模型B</el-menu-item>
-        <el-menu-item index="3">模型C</el-menu-item>
+        <el-menu-item index="1">猜谜大师</el-menu-item>
+        <el-menu-item index="2">史蒂夫</el-menu-item>
+        <el-menu-item index="3">阿不思·邓布利多</el-menu-item>
       </el-menu>
     </aside>
 
@@ -61,6 +61,14 @@
     <aside class="theme-bar">
       <el-card>
         <img :src="modelConfigs[currentModel].themeImg" alt="本地图片" class="theme-img" />
+        <div
+          class="theme-desc"
+          :class="{ 'theme-desc-show': themeDescShow }"
+          :key="currentModel"
+          ref="themeDescRef"
+        >
+          {{ modelConfigs[currentModel].desc }}
+        </div>
       </el-card>
       <div class="theme-content">
         <!-- 可根据模型显示不同内容 -->
@@ -70,13 +78,13 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { marked } from 'marked'
-import char1 from '@/assets/char1.jpg'
-import char2 from '@/assets/char2.jpg'
-import char3 from '@/assets/char3.jpg'
+import char1 from '@/assets/char1.svg'
+import char2 from '@/assets/char2.png'
+import char3 from '@/assets/char3.png'
 import schar1 from '@/assets/schar1.png'
 import schar2 from '@/assets/schar2.png'
 import schar3 from '@/assets/schar3.png'
@@ -92,19 +100,25 @@ const modelConfigs = {
     prompt: '你是模型A，猜谜大师，精通各种脑筋急转弯和谜语。用生动有趣的方式回答用户的问题。',
     themeImg: char1,
     avatar: schar1,
-    welcome: '你好，我是猜谜大师！来和我玩猜谜游戏吧，可以问我各种脑筋急转弯，看看你能猜对多少？'
+    welcome: '你好，我是猜谜大师！来和我玩猜谜游戏吧，可以问我各种脑筋急转弯，看看你能猜对多少？',
+    desc: '猜谜大师，精通各种脑筋急转弯和谜语，善于用生动有趣的方式与用户互动。'
   },
   '2': {
     prompt: '你是模型B，专业的技术顾问。',
     themeImg: char2,
     avatar: schar2,
-    welcome: '你好，我是我的世界中的史蒂夫！有任何关于Minecraft的问题都可以问我，我会用中文回答你的问题。'
+    welcome: '嗯哼，我是史蒂夫，Minecraft的默认玩家角色。试试问我关于《我的世界》的问题吧！',
+    desc: '史蒂夫（Steve） 是《我的世界》（Minecraft）中的默认玩家角色之一，知晓有关《我的世界》的全部信息。'
   },
   '3': {
     prompt: '你是模型C，幽默的生活小助手。',
     themeImg: char3,
     avatar: schar3,
-    welcome: '你好，我是哈利波特世界的魔法师！任何关于魔法咒语和魔法世界的问题，都可以问我，Wingardium Leviosa！'
+    welcome: `（长袍微微闪烁，半月形眼镜后的蓝眼睛温和地注视着你）
+    “啊，欢迎。我是邓布利多——当然，你可以省去那些冗长的中间名。(从桌上拿起一颗柠檬雪宝)要来颗糖果吗？
+    还是说…你带着某个有趣的疑问而来？”
+    (身后的凤凰福克斯轻轻抖了抖羽毛)`,
+    desc: '阿不思·珀西瓦尔·伍尔弗里克·布赖恩·邓布利多（Albus Percival Wulfric Brian Dumbledore），小说《哈利·波特》系列中的角色，被公认为当代最伟大的巫师，对咒语有深入了解'
   }
 }
 
@@ -220,6 +234,21 @@ function scrollToBottom() {
     if (el) el.scrollTop = el.scrollHeight
   })
 }
+
+const themeDescShow = ref(false)
+const themeDescRef = ref(null)
+
+watch(currentModel, async () => {
+  themeDescShow.value = false
+  await nextTick()
+  // 触发重绘后再显示动画
+  themeDescShow.value = true
+})
+
+// 初始化时也触发动画
+nextTick(() => {
+  themeDescShow.value = true
+})
 </script>
 
 <style scoped>
@@ -415,5 +444,22 @@ function scrollToBottom() {
 .message,
 .markdown-body {
   color: #222;
+}
+
+.theme-desc {
+  margin-top: 28px;
+  font-size: 16px;
+  color: #444;
+  text-align: center;
+  line-height: 1.6;
+  padding: 0 8px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s cubic-bezier(.4,2,.6,1), transform 0.6s cubic-bezier(.4,2,.6,1);
+}
+
+.theme-desc.theme-desc-show {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
