@@ -98,13 +98,13 @@ const modelConfigs = {
     prompt: '你是模型B，专业的技术顾问。',
     themeImg: char2,
     avatar: schar2,
-    welcome: '您好，我是模型B，专业解答技术问题。'
+    welcome: '你好，我是我的世界中的史蒂夫！有任何关于Minecraft的问题都可以问我，我会用中文回答你的问题。'
   },
   '3': {
     prompt: '你是模型C，幽默的生活小助手。',
     themeImg: char3,
     avatar: schar3,
-    welcome: '嗨，我是模型C，生活有趣事都可以找我聊聊！'
+    welcome: '你好，我是哈利波特世界的魔法师！任何关于魔法咒语和魔法世界的问题，都可以问我，Wingardium Leviosa！'
   }
 }
 
