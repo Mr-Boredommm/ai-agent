@@ -4,7 +4,7 @@
     <aside class="sidebar">
       <div class="sidebar-title">角色选择</div>
       <el-menu :default-active="currentModel" @select="switchModel">
-        <el-menu-item index="1">模型A</el-menu-item>
+        <el-menu-item index="1">角色一：猜谜大师</el-menu-item>
         <el-menu-item index="2">模型B</el-menu-item>
         <el-menu-item index="3">模型C</el-menu-item>
       </el-menu>
@@ -89,10 +89,10 @@ const history = ref({}) // 保存各模型的历史记录
 // 不同模型的配置，增加 welcome 字段
 const modelConfigs = {
   '1': {
-    prompt: '你是模型A，一个友好的AI助手。',
+    prompt: '你是模型A，猜谜大师，精通各种脑筋急转弯和谜语。用生动有趣的方式回答用户的问题。',
     themeImg: char1,
     avatar: schar1,
-    welcome: '你好，我是模型A，有什么可以帮您？'
+    welcome: '你好，我是猜谜大师！来和我玩猜谜游戏吧，可以问我各种脑筋急转弯，看看你能猜对多少？'
   },
   '2': {
     prompt: '你是模型B，专业的技术顾问。',
@@ -127,10 +127,8 @@ function switchModel(index) {
     ? [...history.value[index]]
     : [{ role: 'ai', content: modelConfigs[index].welcome }]
   input.value = ''
+  scrollToBottom() // 新增：切换模型后滚动到底部
 }
-
-const DEEPSEEK_API_KEY = 'sk-cf33434e04a24ceb99c20e9d99c846ff'
-
 
 /* ====== DeepSeek API 调用与对话传输部分开始 ====== */
 /* ====== DeepSeek API 调用与对话传输部分开始 ====== */
@@ -144,13 +142,15 @@ async function send() {
   messages.value.push({ role: 'user', content: userInput })
   input.value = ''
   loading.value = true
+  scrollToBottom() // 新增：发送后立即滚动，确保加载动画可见
 
   try {
-    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    // 改为请求本地服务
+    console.log("正在发送请求到后端:", userInput);
+    const res = await fetch('http://localhost:8000/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
@@ -163,13 +163,47 @@ async function send() {
         ]
       })
     })
+
+    if (!res.ok) {
+      console.error("API返回错误状态码:", res.status);
+      let errorText = "未知错误";
+      try {
+        const errorData = await res.json();
+        errorText = errorData.detail || `HTTP错误 ${res.status}`;
+        console.error("API错误详情:", errorData);
+      } catch (parseErr) {
+        errorText = await res.text() || `HTTP错误 ${res.status}`;
+      }
+      
+      ElMessage.error(`请求失败: ${errorText}`);
+      messages.value.push({ role: 'ai', content: `很抱歉，我遇到了一个问题: ${errorText}` });
+      return;
+    }
+    
     const data = await res.json()
-    const aiReply = data.choices?.[0]?.message?.content || 'AI未返回内容'
+    console.log("API返回数据:", data);
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("API返回格式不正确:", data);
+      ElMessage.error("AI返回的数据格式不正确");
+      messages.value.push({ role: 'ai', content: "抱歉，我无法正确处理这个请求。" });
+      return;
+    }
+    
+    const aiReply = data.choices[0].message.content || 'AI未返回内容'
     messages.value.push({ role: 'ai', content: aiReply })
     await nextTick()
     scrollToBottom()
   } catch (e) {
-    ElMessage.error('AI接口调用失败')
+    console.error("API调用失败:", e);
+    ElMessage.error({
+      message: `AI接口调用失败: ${e.message || e}`,
+      duration: 5000
+    });
+    messages.value.push({ 
+      role: 'ai', 
+      content: `很抱歉，我现在无法回答您的问题。服务器可能暂时不可用，请稍后再试。错误信息: ${e.message || '未知错误'}`
+    });
   } finally {
     loading.value = false
   }
@@ -181,8 +215,10 @@ async function send() {
 /* ====== DeepSeek API 调用与对话传输部分结束 ====== */
 
 function scrollToBottom() {
-  const el = document.querySelector('.chat-messages')
-  if (el) el.scrollTop = el.scrollHeight
+  nextTick(() => {
+    const el = document.querySelector('.chat-messages')
+    if (el) el.scrollTop = el.scrollHeight
+  })
 }
 </script>
 
@@ -367,5 +403,17 @@ function scrollToBottom() {
   transform: scale(1.08);
   box-shadow: 0 8px 28px #409eff55;
   z-index: 2;
+}
+
+.chat-layout,
+.sidebar,
+.sidebar-title,
+.chat-main,
+.theme-bar,
+.theme-title,
+.theme-content,
+.message,
+.markdown-body {
+  color: #222;
 }
 </style>
