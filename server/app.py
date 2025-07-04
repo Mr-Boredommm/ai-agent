@@ -198,7 +198,7 @@ def init_index():
             print(f"尝试删除旧集合时出错: {e}")
         
         # 读取JSON文件并准备文档
-        with open(os.path.join(minecraft_data_path, "train.json"), "r", encoding="utf-8") as f:
+        with open(os.path.join(minecraft_data_path, "minecraft.json"), "r", encoding="utf-8") as f:
             minecraft_data = json.load(f)
         
         # 将JSON数据转换为文本文档
