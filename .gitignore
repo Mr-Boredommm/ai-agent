@@ -32,3 +32,4 @@ coverage
 /server/chroma_db/
 *.tsbuildinfo
 /server/_pycache_
+/data/minecraft/train.json
