@@ -27,4 +27,7 @@ coverage
 *.sln
 *.sw?
 
+# 项目特定忽略
+/server/config.json
+/server/chroma_db/
 *.tsbuildinfo
