@@ -188,7 +188,7 @@ def init_index():
         print("正在创建新的我的世界索引...")
         minecraft_data_path = os.path.join(DATA_DIR, "minecraft")
         
-        # 删除已存在的collection（如果有）
+        # 删除已存在的collection（如果有）+
         try:
             if "minecraft" in [col.name for col in chroma_client.list_collections()]:
                 print("发现已存在的minecraft集合，正在删除...")

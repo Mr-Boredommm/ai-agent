@@ -33,3 +33,4 @@ coverage
 *.tsbuildinfo
 /server/_pycache_
 /data/minecraft/train.json
+git-filter-repo
