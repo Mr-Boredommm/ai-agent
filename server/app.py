@@ -67,7 +67,7 @@ def get_api_key():
     
     # 如果还是没有，使用默认值
     if not api_key:
-        api_key = "sk-cf33434e04a24ceb99c20e9d99c846ff"  # 使用与前端相同的默认API密钥
+        api_key = "DEEPSEEK-API"  # 使用与前端相同的默认API密钥
         print("警告: 使用默认API密钥，建议替换为您自己的密钥")
         print("您可以通过创建config.json文件或设置DEEPSEEK_API_KEY环境变量来配置自己的API密钥")
     
