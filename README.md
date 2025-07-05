@@ -37,7 +37,7 @@ npm run dev
 2. 首次运行时执行以下命令创建Conda环境:
 
 ```sh
-conda create -n py312 python=3.12
+conda create -n llamaindex python=3.12
 ```
 
 3. 启动后端服务器:
@@ -50,7 +50,7 @@ start_server.bat
 或手动启动:
 
 ```sh
-conda activate py312
+conda activate llamaindex
 pip install -r requirements.txt
 python app.py
 ```
